@@ -69,4 +69,59 @@ public class MovieService {
         }
         return Optional.ofNullable(movieMap.get(id));
     }
+
+    /**
+     * Search movies based on provided criteria.
+     * All parameters are optional and case-insensitive where applicable.
+     * 
+     * @param name Movie name to search for (partial matching)
+     * @param id Exact movie ID to search for
+     * @param genre Genre to search for (partial matching)
+     * @return List of movies matching the search criteria
+     */
+    public List<Movie> searchMovies(String name, Long id, String genre) {
+        logger.info("Searching movies with criteria - name: {}, id: {}, genre: {}", name, id, genre);
+        
+        List<Movie> results = new ArrayList<>(movies);
+        
+        // Filter by ID if provided
+        if (id != null && id > 0) {
+            results = results.stream()
+                    .filter(movie -> movie.getId() == id)
+                    .collect(ArrayList::new, (list, movie) -> list.add(movie), ArrayList::addAll);
+        }
+        
+        // Filter by name if provided (case-insensitive partial matching)
+        if (name != null && !name.trim().isEmpty()) {
+            String searchName = name.trim().toLowerCase();
+            results = results.stream()
+                    .filter(movie -> movie.getMovieName().toLowerCase().contains(searchName))
+                    .collect(ArrayList::new, (list, movie) -> list.add(movie), ArrayList::addAll);
+        }
+        
+        // Filter by genre if provided (case-insensitive partial matching)
+        if (genre != null && !genre.trim().isEmpty()) {
+            String searchGenre = genre.trim().toLowerCase();
+            results = results.stream()
+                    .filter(movie -> movie.getGenre().toLowerCase().contains(searchGenre))
+                    .collect(ArrayList::new, (list, movie) -> list.add(movie), ArrayList::addAll);
+        }
+        
+        logger.info("Search returned {} movies", results.size());
+        return results;
+    }
+
+    /**
+     * Get all unique genres from the movie collection.
+     * Useful for populating genre dropdown or suggestions.
+     * 
+     * @return List of unique genres
+     */
+    public List<String> getAllGenres() {
+        return movies.stream()
+                .map(Movie::getGenre)
+                .distinct()
+                .sorted()
+                .collect(ArrayList::new, (list, genre) -> list.add(genre), ArrayList::addAll);
+    }
 }
