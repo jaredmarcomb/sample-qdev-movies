@@ -9,7 +9,58 @@
 <body>
     <div class="container">
         <h1>Free Movies This Month</h1>
-        <div class="movies-grid">
+        
+        <!-- Search Form -->
+        <div class="search-section">
+            <h2>Search Movies</h2>
+            <form method="GET" action="/movies" class="search-form">
+                <div class="search-fields">
+                    <div class="search-field">
+                        <label for="name">Movie Name:</label>
+                        <input type="text" id="name" name="name" 
+                               th:value="${searchName}" 
+                               placeholder="Enter movie name...">
+                    </div>
+                    <div class="search-field">
+                        <label for="id">Movie ID:</label>
+                        <input type="number" id="id" name="id" 
+                               th:value="${searchId}" 
+                               placeholder="Enter movie ID..." min="1">
+                    </div>
+                    <div class="search-field">
+                        <label for="genre">Genre:</label>
+                        <input type="text" id="genre" name="genre" 
+                               th:value="${searchGenre}" 
+                               placeholder="Enter genre..."
+                               list="genre-suggestions">
+                        <datalist id="genre-suggestions">
+                            <option th:each="genreOption : ${allGenres}" 
+                                    th:value="${genreOption}" 
+                                    th:text="${genreOption}">
+                            </option>
+                        </datalist>
+                    </div>
+                </div>
+                <div class="search-buttons">
+                    <button type="submit" class="search-btn">Search Movies</button>
+                    <a href="/movies" class="clear-btn">Clear Search</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Search Results Info -->
+        <div th:if="${searchPerformed}" class="search-results-info">
+            <div th:if="${resultCount > 0}" class="results-found">
+                <p>Found <strong th:text="${resultCount}">0</strong> movie(s) matching your search criteria.</p>
+            </div>
+            <div th:if="${resultCount == 0}" class="no-results">
+                <p>No movies found matching your search criteria. Try adjusting your search terms.</p>
+                <a href="/movies" class="view-all-btn">View All Movies</a>
+            </div>
+        </div>
+
+        <!-- Movies Grid -->
+        <div class="movies-grid" th:if="${movies != null and !movies.empty}">
             <div class="movie-card" th:each="movie : ${movies}">
                 <div class="movie-icon" th:text="${movie.icon}">🎬</div>
                 <h3 th:text="${movie.movieName}">Movie Title</h3>
@@ -29,6 +80,160 @@
                 <a th:href="@{/movies/{id}/details(id=${movie.id})}" class="details-btn">View Details</a>
             </div>
         </div>
+
+        <!-- Empty State for No Movies -->
+        <div th:if="${movies == null or movies.empty}" class="empty-state">
+            <div class="empty-icon">🎬</div>
+            <h3>No Movies Available</h3>
+            <p>There are currently no movies to display.</p>
+        </div>
     </div>
+
+    <style>
+        /* Search Form Styles */
+        .search-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .search-section h2 {
+            margin: 0 0 20px 0;
+            color: #333;
+            font-size: 1.5em;
+        }
+
+        .search-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .search-fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .search-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .search-field label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .search-field input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .search-field input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .search-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+
+        .search-btn, .clear-btn, .view-all-btn {
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .search-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+
+        .search-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .clear-btn, .view-all-btn {
+            background-color: #6c757d;
+            color: white;
+            border: 1px solid #6c757d;
+        }
+
+        .clear-btn:hover, .view-all-btn:hover {
+            background-color: #545b62;
+        }
+
+        /* Search Results Info */
+        .search-results-info {
+            margin-bottom: 20px;
+        }
+
+        .results-found {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px 15px;
+            border-radius: 4px;
+        }
+
+        .no-results {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .no-results p {
+            margin-bottom: 15px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .search-fields {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-buttons {
+                flex-direction: column;
+            }
+            
+            .search-btn, .clear-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
 </body>
 </html>
